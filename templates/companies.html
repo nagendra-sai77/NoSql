@@ -1,0 +1,59 @@
+{% extends "base.html" %}
+{% block title %}Companies — PlacementMS{% endblock %}
+{% block page_title %}Companies{% endblock %}
+{% block content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+  <div>
+    <h2 style="font-size:1.4rem; font-weight:700">All Companies</h2>
+    <p style="color:var(--muted); font-size:0.85rem; margin-top:0.2rem">{{ companies|length }} company(s) registered</p>
+  </div>
+  <a href="{{ url_for('add_company') }}" class="btn btn-primary" id="btn-add-company-top">➕ Add Company</a>
+</div>
+
+<div class="card">
+  {% if companies %}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Company Name</th>
+        <th>Role</th>
+        <th>Min CGPA</th>
+        <th>Required Skills</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in companies %}
+      <tr>
+        <td style="color:var(--muted); font-size:0.8rem">{{ loop.index }}</td>
+        <td style="font-weight:700">{{ c.name }}</td>
+        <td style="color:var(--muted)">{{ c.role }}</td>
+        <td>
+          <span style="
+            background:rgba(167,139,250,0.15);
+            color:var(--accent2);
+            padding:0.25rem 0.65rem; border-radius:20px; font-size:0.82rem; font-weight:700;">
+            {{ c.min_cgpa }}+
+          </span>
+        </td>
+        <td>
+          {% for skill in c.required_skills %}
+            <span class="tag">{{ skill }}</span>
+          {% else %}
+            <span style="color:var(--muted); font-size:0.8rem">—</span>
+          {% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <span class="emoji">🏢</span>
+    <p>No companies registered yet. Add your first company to begin placement.</p>
+    <a href="{{ url_for('add_company') }}" class="btn btn-primary">➕ Add First Company</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

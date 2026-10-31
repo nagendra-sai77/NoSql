@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block title %}Applications — PlacementMS{% endblock %}
+{% block page_title %}Applications{% endblock %}
+{% block content %}
+<div class="card">
+  <h2>📋 Applications</h2>
+  {% if applications %}
+  <table>
+    <thead>
+      <tr><th>#</th><th>Student</th><th>Company</th><th>Status</th></tr>
+    </thead>
+    <tbody>
+      {% for a in applications %}
+      <tr>
+        <td style="color:var(--muted)">{{ loop.index }}</td>
+        <td>{{ a.student_name or a.student_id }}</td>
+        <td>{{ a.company_name or a.company_id }}</td>
+        <td>
+          <span style="
+            background:{% if a.status == 'selected' %}rgba(16,185,129,0.15){% elif a.status == 'rejected' %}rgba(239,68,68,0.12){% else %}rgba(245,158,11,0.12){% endif %};
+            color:{% if a.status == 'selected' %}#6ee7b7{% elif a.status == 'rejected' %}#fca5a5{% else %}#fcd34d{% endif %};
+            padding:0.25rem 0.65rem; border-radius:20px; font-size:0.8rem; font-weight:600; text-transform:capitalize;">
+            {{ a.status or 'pending' }}
+          </span>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <span class="emoji">📋</span>
+    <p>No applications recorded yet. Applications appear here after students are matched to companies.</p>
+    <a href="{{ url_for('match') }}" class="btn btn-success">⚡ Run Smart Match</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

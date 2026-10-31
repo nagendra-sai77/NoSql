@@ -1,0 +1,115 @@
+{% extends "base.html" %}
+{% block title %}Dashboard — PlacementMS{% endblock %}
+{% block page_title %}Dashboard{% endblock %}
+
+{% block content %}
+
+<!-- Stat cards -->
+<div class="stats-grid">
+  <div class="stat-card s1">
+    <div class="stat-number">{{ stats.students }}</div>
+    <div class="stat-label">Total Students</div>
+    <span class="stat-icon">👥</span>
+  </div>
+  <div class="stat-card s2">
+    <div class="stat-number">{{ stats.companies }}</div>
+    <div class="stat-label">Companies</div>
+    <span class="stat-icon">🏢</span>
+  </div>
+  <div class="stat-card s3">
+    <div class="stat-number">{{ stats.matches }}</div>
+    <div class="stat-label">Skill Matches</div>
+    <span class="stat-icon">⚡</span>
+  </div>
+  <div class="stat-card s4">
+    <div class="stat-number">{{ stats.skills }}</div>
+    <div class="stat-label">Unique Skills</div>
+    <span class="stat-icon">🛠️</span>
+  </div>
+</div>
+
+<!-- Recent Students & Companies side by side -->
+<div style="display:grid; grid-template-columns:1fr 1fr; gap:1.25rem; margin-bottom:1.25rem;">
+
+  <!-- Recent Students -->
+  <div class="card" style="margin-bottom:0">
+    <h2>👥 Recent Students</h2>
+    {% if recent_students %}
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Dept</th>
+          <th>CGPA</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for s in recent_students %}
+        <tr>
+          <td style="font-weight:500">{{ s.name }}</td>
+          <td style="color:var(--muted)">{{ s.dept }}</td>
+          <td>
+            <span style="
+              background:{% if s.cgpa >= 8.0 %}rgba(16,185,129,0.15){% elif s.cgpa >= 6.5 %}rgba(245,158,11,0.15){% else %}rgba(239,68,68,0.12){% endif %};
+              color:{% if s.cgpa >= 8.0 %}#6ee7b7{% elif s.cgpa >= 6.5 %}#fcd34d{% else %}#fca5a5{% endif %};
+              padding:0.2rem 0.6rem; border-radius:20px; font-size:0.8rem; font-weight:600;">
+              {{ s.cgpa }}
+            </span>
+          </td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <span class="emoji">👤</span>
+      <p>No students added yet.</p>
+      <a href="{{ url_for('add_student') }}" class="btn btn-primary">➕ Add Student</a>
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Recent Companies -->
+  <div class="card" style="margin-bottom:0">
+    <h2>🏢 Recent Companies</h2>
+    {% if recent_companies %}
+    <table>
+      <thead>
+        <tr>
+          <th>Name</th>
+          <th>Role</th>
+          <th>Min CGPA</th>
+        </tr>
+      </thead>
+      <tbody>
+        {% for c in recent_companies %}
+        <tr>
+          <td style="font-weight:500">{{ c.name }}</td>
+          <td style="color:var(--muted)">{{ c.role }}</td>
+          <td style="color:var(--accent2); font-weight:600">{{ c.min_cgpa }}</td>
+        </tr>
+        {% endfor %}
+      </tbody>
+    </table>
+    {% else %}
+    <div class="empty-state">
+      <span class="emoji">🏢</span>
+      <p>No companies registered yet.</p>
+      <a href="{{ url_for('add_company') }}" class="btn btn-primary">➕ Add Company</a>
+    </div>
+    {% endif %}
+  </div>
+</div>
+
+<!-- Quick actions -->
+<div class="card">
+  <h2>🚀 Quick Actions</h2>
+  <div class="btn-row" style="margin-top:0">
+    <a href="{{ url_for('add_student') }}" class="btn btn-primary" id="quick-add-student">➕ Add Student</a>
+    <a href="{{ url_for('add_company') }}" class="btn btn-primary" id="quick-add-company">➕ Add Company</a>
+    <a href="{{ url_for('match') }}" class="btn btn-success" id="quick-match">⚡ Run Smart Match</a>
+    <a href="{{ url_for('setup') }}" class="btn btn-secondary" id="quick-setup">⚙️ Setup</a>
+  </div>
+</div>
+
+{% endblock %}

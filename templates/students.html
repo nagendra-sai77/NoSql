@@ -1,0 +1,61 @@
+{% extends "base.html" %}
+{% block title %}Students — PlacementMS{% endblock %}
+{% block page_title %}Students{% endblock %}
+{% block content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+  <div>
+    <h2 style="font-size:1.4rem; font-weight:700">All Students</h2>
+    <p style="color:var(--muted); font-size:0.85rem; margin-top:0.2rem">{{ students|length }} student(s) registered</p>
+  </div>
+  <a href="{{ url_for('add_student') }}" class="btn btn-primary" id="btn-add-student-top">➕ Add Student</a>
+</div>
+
+<div class="card">
+  {% if students %}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Name</th>
+        <th>Roll No</th>
+        <th>Department</th>
+        <th>CGPA</th>
+        <th>Skills</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in students %}
+      <tr>
+        <td style="color:var(--muted); font-size:0.8rem">{{ loop.index }}</td>
+        <td style="font-weight:600">{{ s.name }}</td>
+        <td style="font-family:monospace; font-size:0.85rem; color:var(--muted)">{{ s.roll_no }}</td>
+        <td>{{ s.dept }}</td>
+        <td>
+          <span style="
+            background:{% if s.cgpa >= 8.0 %}rgba(16,185,129,0.15){% elif s.cgpa >= 6.5 %}rgba(245,158,11,0.15){% else %}rgba(239,68,68,0.12){% endif %};
+            color:{% if s.cgpa >= 8.0 %}#6ee7b7{% elif s.cgpa >= 6.5 %}#fcd34d{% else %}#fca5a5{% endif %};
+            padding:0.25rem 0.65rem; border-radius:20px; font-size:0.82rem; font-weight:700;">
+            {{ s.cgpa }}
+          </span>
+        </td>
+        <td>
+          {% for skill in s.skills %}
+            <span class="tag">{{ skill }}</span>
+          {% else %}
+            <span style="color:var(--muted); font-size:0.8rem">—</span>
+          {% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <span class="emoji">👤</span>
+    <p>No students registered yet. Add your first student to get started.</p>
+    <a href="{{ url_for('add_student') }}" class="btn btn-primary">➕ Add First Student</a>
+  </div>
+  {% endif %}
+</div>
+{% endblock %}

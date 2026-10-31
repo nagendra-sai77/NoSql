@@ -1,0 +1,143 @@
+{% extends "base.html" %}
+{% block content %}
+<style>
+  body { font-family: 'Segoe UI', sans-serif; background: #0f1117; color: #e2e8f0; margin: 0; }
+  .setup-wrapper { max-width: 680px; margin: 2rem auto; padding: 0 1rem; }
+  h1 { font-size: 1.8rem; margin-bottom: 0.25rem; color: #a78bfa; }
+  .subtitle { color: #94a3b8; margin-bottom: 2rem; font-size: 0.95rem; }
+
+  /* Status banner */
+  .status-banner { display: flex; align-items: center; gap: 0.75rem; padding: 1rem 1.25rem;
+    border-radius: 10px; margin-bottom: 2rem; font-size: 0.95rem; }
+  .status-banner.ok  { background: #064e3b; border: 1px solid #10b981; color: #6ee7b7; }
+  .status-banner.err { background: #450a0a; border: 1px solid #ef4444; color: #fca5a5; }
+  .status-dot { width: 12px; height: 12px; border-radius: 50%; flex-shrink: 0; }
+  .status-dot.ok  { background: #10b981; box-shadow: 0 0 8px #10b981; animation: pulse 1.5s infinite; }
+  .status-dot.err { background: #ef4444; box-shadow: 0 0 8px #ef4444; }
+  @keyframes pulse { 0%,100%{opacity:1} 50%{opacity:0.5} }
+
+  /* Card */
+  .card { background: #1e2130; border: 1px solid #2d3148; border-radius: 12px;
+    padding: 1.75rem; margin-bottom: 1.5rem; }
+  .card h2 { margin-top: 0; color: #c4b5fd; font-size: 1.1rem; }
+
+  label { display: block; margin-bottom: 0.3rem; color: #94a3b8; font-size: 0.85rem; font-weight: 600; }
+  input[type=text], input[type=password] {
+    width: 100%; box-sizing: border-box; padding: 0.65rem 0.9rem;
+    background: #0f1117; border: 1px solid #374151; border-radius: 8px;
+    color: #e2e8f0; font-size: 0.95rem; margin-bottom: 1rem; outline: none;
+    transition: border-color 0.2s;
+  }
+  input:focus { border-color: #7c3aed; }
+
+  .btn-row { display: flex; gap: 0.75rem; flex-wrap: wrap; }
+  button { padding: 0.65rem 1.4rem; border: none; border-radius: 8px; font-size: 0.9rem;
+    font-weight: 600; cursor: pointer; transition: opacity 0.2s, transform 0.1s; }
+  button:hover { opacity: 0.88; transform: translateY(-1px); }
+  .btn-test { background: #1d4ed8; color: #fff; }
+  .btn-save { background: #7c3aed; color: #fff; }
+
+  /* Result after form submit */
+  .result { margin-top: 1.25rem; padding: 1rem 1.25rem; border-radius: 8px; font-size: 0.9rem; }
+  .result.success { background: #064e3b; border: 1px solid #10b981; color: #6ee7b7; }
+  .result.failed  { background: #450a0a; border: 1px solid #ef4444; color: #fca5a5; }
+
+  /* README tips */
+  .tip-card { background: #1a1f35; border: 1px solid #2d3148; border-radius: 12px; padding: 1.5rem; }
+  .tip-card h2 { margin-top: 0; color: #fbbf24; font-size: 1rem; }
+  .tip-card code { background: #0f1117; border: 1px solid #374151; border-radius: 4px;
+    padding: 0.15rem 0.4rem; font-size: 0.85rem; color: #86efac; }
+  .tip-card pre { background: #0f1117; border: 1px solid #374151; border-radius: 8px;
+    padding: 1rem; overflow-x: auto; font-size: 0.82rem; color: #86efac; line-height: 1.6; }
+  ol li, ul li { margin-bottom: 0.5rem; color: #cbd5e1; }
+</style>
+
+<div class="setup-wrapper">
+  <h1>⚙️ Neo4j Connection Setup</h1>
+  <p class="subtitle">Test and update your Neo4j credentials without restarting the server.</p>
+
+  <!-- Current connection status -->
+  {% if current_ok %}
+  <div class="status-banner ok">
+    <div class="status-dot ok"></div>
+    <div><strong>Connected</strong> — Neo4j is reachable at <code style="font-size:0.85rem">{{ current_uri }}</code> as <em>{{ current_username }}</em></div>
+  </div>
+  {% else %}
+  <div class="status-banner err">
+    <div class="status-dot err"></div>
+    <div><strong>Not Connected</strong> — {{ current_err }}</div>
+  </div>
+  {% endif %}
+
+  <!-- Test / Save form -->
+  <div class="card">
+    <h2>🔌 Test / Update Credentials</h2>
+    <form method="POST" action="/setup">
+      <label for="neo4j_uri">Neo4j URI</label>
+      <input id="neo4j_uri" type="text" name="neo4j_uri"
+             value="{{ request.form.get('neo4j_uri', current_uri) }}"
+             placeholder="bolt://localhost:7687">
+
+      <label for="neo4j_username">Username</label>
+      <input id="neo4j_username" type="text" name="neo4j_username"
+             value="{{ request.form.get('neo4j_username', current_username) }}"
+             placeholder="neo4j">
+
+      <label for="neo4j_password">Password</label>
+      <input id="neo4j_password" type="password" name="neo4j_password"
+             value="" placeholder="Enter Neo4j password">
+
+      <div class="btn-row">
+        <button class="btn-test" type="submit" name="action" value="test" id="btn-test">
+          🔍 Test Connection
+        </button>
+        <button class="btn-save" type="submit" name="action" value="save" id="btn-save">
+          💾 Test &amp; Save to .env
+        </button>
+      </div>
+    </form>
+
+    {% if status == 'success' %}
+    <div class="result success">
+      ✅ Connection successful!
+      {% if request.form.get('action') == 'save' %}
+        Credentials have been saved to <code>.env</code>.
+      {% endif %}
+    </div>
+    {% elif status == 'failed' %}
+    <div class="result failed">
+      ❌ {{ error_msg }}
+    </div>
+    {% endif %}
+  </div>
+
+  <!-- Auth fix tips -->
+  <div class="tip-card">
+    <h2>📖 How to Fix Neo4j Auth Errors</h2>
+
+    <p><strong>Option 1 — Find your password in Neo4j Desktop:</strong></p>
+    <ol>
+      <li>Open <strong>Neo4j Desktop</strong> → click your database → <em>Details</em> tab.</li>
+      <li>Your connection URI and credentials are shown there.</li>
+      <li>Paste the password above and click <em>Test &amp; Save to .env</em>.</li>
+    </ol>
+
+    <p><strong>Option 2 — Reset password via terminal:</strong></p>
+    <pre># Stop Neo4j first, then:
+neo4j-admin dbms set-initial-password neo4j123
+
+# Then start Neo4j and use neo4j123 as your password above.</pre>
+
+    <p><strong>Option 3 — Edit .env manually:</strong></p>
+    <pre># In your project root (.env):
+NEO4J_URI=bolt://localhost:7687
+NEO4J_USERNAME=neo4j
+NEO4J_PASSWORD=&lt;your_real_password&gt;</pre>
+
+    <p style="color:#94a3b8; font-size:0.85rem; margin-bottom:0">
+      After editing <code>.env</code> manually, restart the Flask server for changes to take effect,
+      or use the <em>Test &amp; Save</em> button above for a live update.
+    </p>
+  </div>
+</div>
+{% endblock %}

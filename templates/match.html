@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+{% block title %}Smart Match — PlacementMS{% endblock %}
+{% block page_title %}Smart Match{% endblock %}
+{% block content %}
+
+<div style="display:flex; justify-content:space-between; align-items:center; margin-bottom:1.25rem;">
+  <div>
+    <h2 style="font-size:1.4rem; font-weight:700">⚡ Smart Match Results</h2>
+    <p style="color:var(--muted); font-size:0.85rem; margin-top:0.25rem;">
+      Students matched to companies based on shared skills and CGPA threshold — powered by Neo4j graph traversal.
+    </p>
+  </div>
+  <a href="{{ url_for('match') }}" class="btn btn-success" id="btn-refresh-match">🔄 Refresh</a>
+</div>
+
+{% if neo4j_error %}
+<div class="flash-item danger" style="margin-bottom:1.25rem;">
+  ❌ Neo4j Error: {{ neo4j_error }}.
+  <a href="{{ url_for('setup') }}" style="color:#fca5a5; margin-left:0.5rem; font-weight:600;">Fix in Setup →</a>
+</div>
+{% endif %}
+
+<div class="card">
+  {% if matches %}
+  <table>
+    <thead>
+      <tr>
+        <th>#</th>
+        <th>Student</th>
+        <th>Company</th>
+        <th>Role</th>
+        <th>Matched Skills</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for m in matches %}
+      <tr>
+        <td style="color:var(--muted); font-size:0.8rem">{{ loop.index }}</td>
+        <td style="font-weight:600">
+          <span style="display:inline-flex; align-items:center; gap:0.4rem;">
+            <span style="width:28px; height:28px; border-radius:50%; background:linear-gradient(135deg,#7c3aed,#3b82f6); display:inline-flex; align-items:center; justify-content:center; font-size:0.7rem; font-weight:700; color:#fff;">
+              {{ m.student[0] | upper }}
+            </span>
+            {{ m.student }}
+          </span>
+        </td>
+        <td style="font-weight:500">{{ m.company }}</td>
+        <td style="color:var(--muted)">{{ m.role }}</td>
+        <td>
+          {% for skill in m.skills %}
+            <span class="tag">{{ skill }}</span>
+          {% endfor %}
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+  {% else %}
+  <div class="empty-state">
+    <span class="emoji">🔍</span>
+    <p>No matches found. Make sure students and companies share overlapping skills.</p>
+    <div class="btn-row" style="justify-content:center; margin-top:0;">
+      <a href="{{ url_for('add_student') }}" class="btn btn-primary">➕ Add Student</a>
+      <a href="{{ url_for('add_company') }}" class="btn btn-primary">➕ Add Company</a>
+    </div>
+  </div>
+  {% endif %}
+</div>
+
+<div style="color:var(--muted); font-size:0.78rem; margin-top:-0.5rem;">
+  Cypher query: <code style="background:#1e2130; padding:0.2rem 0.5rem; border-radius:4px; font-size:0.76rem; color:#86efac;">
+    MATCH (s:Student)-[:HAS_SKILL]->(sk:Skill)&lt;-[:REQUIRES_SKILL]-(c:Company) WHERE s.cgpa &gt;= c.min_cgpa
+  </code>
+</div>
+{% endblock %}
